@@ -5,7 +5,7 @@ from ..database import get_db
 from .. import schemas
 from ..authentication import get_current_user
 from ..data import models
-from ..services import tasks as tasks_service
+from ..business import tasks as tasks_service
 
 # Purpose: Router for task-related endpoints
 router = APIRouter(prefix="/tasks")

@@ -2,7 +2,7 @@ import logging
 from typing import Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
-from app.core.errors import UsernameTakenError
+from ..core.errors import UsernameTakenError, InvalidCredentialsError
 from ..authentication import hash_password, verify_password
 from ..data.repositories import users as users_repo
 from ..data import models
@@ -29,12 +29,9 @@ def register_user(db: Session, *, username: str, password: str) -> models.User:
     return user
 
 def authenticate_user(db: Session, *, username: str, password: str) -> Optional[models.User]:
-    user = users_repo.find_by_username(db, username)  # <-- safe finder
-    if not user:
-        logger.warning("Authentication failed for user %s: User not found", username)
-        return None
-    if not verify_password(password, user.password_hash):
-        logger.warning("Authentication failed for user %s: Incorrect password", username)
-        return None
+    user = users_repo.find_by_username(db, username)
+    if not user or not verify_password(password, user.password_hash):
+        logger.warning("Authentication failed for user %s", username)
+        raise InvalidCredentialsError()  
     logger.info("User %s authenticated successfully", username)
     return user
