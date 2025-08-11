@@ -12,7 +12,7 @@ export default function TaskItem({ task, onToggle, onEdit, onDelete }) {
   };
 
   return (
-    <div className={`card row task ${task.completed ? "done" : ""}`}>
+    <div className={`card row task ${task.completed ? "done" : ""}`} style={{transition:'transform .06s ease-in-out'}}>
       <label className="checkbox">
         <input
           type="checkbox"

@@ -77,12 +77,21 @@ export default function TasksPage() {
 
   return (
     <div className="container">
+      <div className="titlebar">
+        <h1 className="h1">My Tasks</h1>
+        <div className="kpis">
+          <span className="kpi">Total: {tasks.length}</span>
+          <span className="kpi">Done: {tasks.filter(t=>t.completed).length}</span>
+        </div>
+      </div>
+
       <TaskForm onAdd={addTask} />
       {err && <div className="error">{err}</div>}
+
       {loading ? (
-        <div className="muted">Loading…</div>
+        <div className="placeholder"><span className="spinner" />Loading your tasks…</div>
       ) : tasks.length === 0 ? (
-        <div className="muted">No tasks yet. Add one above.</div>
+        <div className="placeholder">No tasks yet. Add your first task above ✨</div>
       ) : (
         <div className="col gap">
           {tasks.map((t) => (
