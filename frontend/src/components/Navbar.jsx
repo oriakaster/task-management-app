@@ -3,6 +3,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth";
 
+/**
+ * Navbar component that displays navigation links based on authentication status.
+ * @returns {JSX.Element} The rendered Navbar component.
+ */
 export default function Navbar() {
   const { isAuthed, username, logout } = useAuth();
   return (

@@ -5,6 +5,8 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
+# Define the base directory for the application
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Settings(BaseSettings):
@@ -18,11 +20,14 @@ class Settings(BaseSettings):
     algorithm: str = Field("HS256", alias="ALGORITHM")
     access_token_expire_minutes: int = Field(60, alias="ACCESS_TOKEN_EXPIRE_MINUTES")
 
-    # CORS (comma-separated)
+    # CORS
     cors_origins_raw: str = Field("http://127.0.0.1:5173", alias="CORS_ORIGINS")
 
     @property
     def cors_origins(self) -> List[str]:
+        """input: None
+           output: List[str]
+           Get the list of CORS origins from the raw string."""
         return [o.strip() for o in self.cors_origins_raw.split(",") if o.strip()]
 
     model_config = SettingsConfigDict(
@@ -33,4 +38,7 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    """input: None
+       output: Settings
+       Get the application settings, caching the result for performance."""
     return Settings()

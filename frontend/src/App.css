@@ -1,3 +1,5 @@
+/* Root app container: centers content and caps line length for readability. 
+   1280px matches our design’s max width. */
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -5,19 +7,26 @@
   text-align: center;
 }
 
+/* Interactive brand mark. `will-change` hints animation; avoid leaving it on
+   huge elements due to memory cost. */
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
+
+/* Default glow on hover */
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
+/* Variant: React-themed glow */
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+/* Spin animation used only when motion is allowed */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -27,6 +36,7 @@
   }
 }
 
+/* Apply spin animation to the second logo link only when motion is allowed */
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;

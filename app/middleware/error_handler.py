@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 def _json(status: int, code: str, message: str,
           *, fields: dict | None = None, details=None,
           headers=None, error_id: str | None = None) -> JSONResponse:
+    """input: status, code, message, fields=None, details=None, headers=None, error_id=None
+       output: JSONResponse
+       Creates a JSON response with the given status, code, message, and optional fields, details, headers, and error_id."""
     body = {
         "error": {
             "code": code,
@@ -32,6 +35,9 @@ def _json(status: int, code: str, message: str,
 
 class ErrorHandlingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+        """input: request, call_next
+           output: JSONResponse or response from call_next
+           Handles errors during request processing and returns appropriate JSON responses."""
         try:
             response = await call_next(request)
 

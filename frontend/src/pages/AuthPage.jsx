@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { useAuth } from "../auth";
 import { useNavigate } from "react-router-dom";
 
+/** * AuthPage component for user authentication (login/register).
+ * It allows users to log in or register a new account.
+ * * @returns {JSX.Element} The rendered AuthPage component.
+ */
 export default function AuthPage() {
   const nav = useNavigate();
   const { login, register } = useAuth();

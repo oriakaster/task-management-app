@@ -10,7 +10,7 @@ class TaskCreate(BaseModel):
     description: str
 
 class TaskUpdate(TaskBase):
-    pass  # partial updates allowed
+    pass
 
 class TaskOut(BaseModel):
     id: int

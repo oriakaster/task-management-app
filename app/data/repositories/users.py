@@ -31,7 +31,6 @@ def create_user(db: Session, *, username: str, password_hash: str) -> models.Use
         return user
     except SQLAlchemyError as e:
         db.rollback()
-        # Bubble as a domain error; handler will return 500 JSON
         raise DatabaseError() from e
 
 def get_by_id(db: Session, user_id: int) -> models.User:

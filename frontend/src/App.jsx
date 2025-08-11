@@ -5,6 +5,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AuthPage from "./pages/AuthPage";
 import TasksPage from "./pages/TasksPage";
 
+/**
+ * Main application component that sets up the routing for the app.
+ * It includes a navigation bar and defines routes for authentication and tasks.
+ * It uses React Router for navigation and includes a protected route for tasks.
+ * @returns {JSX.Element}
+ */
 export default function App() {
   return (
     <>

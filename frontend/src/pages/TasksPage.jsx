@@ -4,6 +4,10 @@ import { api } from "../api";
 import TaskForm from "../components/TaskForm";
 import TaskItem from "../components/TaskItem";
 
+/** * TasksPage component for managing user tasks.
+ * It allows users to view, add, edit, toggle completion status, and delete tasks.
+ * * @returns {JSX.Element} The rendered TasksPage component.
+ */
 export default function TasksPage() {
   const { token } = useAuth();
   const [tasks, setTasks] = useState([]);
