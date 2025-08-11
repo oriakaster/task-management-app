@@ -20,23 +20,31 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-# Purpose: Hashes a plain text password using bcrypt
 def hash_password(password: str) -> str:
+    """input: plain text password
+       output: hashed password
+       securely store user passwords using bcrypt"""
     return pwd_context.hash(password)
 
-# Purpose: Verifies a plain text password against a hashed password
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """input: plain text password, hashed password
+       output: boolean indicating if the password matches
+       securely verify user passwords"""
     return pwd_context.verify(plain_password, hashed_password)
 
-# Purpose: Creates a JWT access token with an expiration time
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """input: data dictionary, optional expiration delta
+       output: JWT token as a string
+       create a JWT token for user authentication"""
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# Purpose: Retrieves the current user from the database using the provided JWT token
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> models.User:
+    """input: database session, JWT token
+       output: User object if token is valid, raises HTTPException if not
+       retrieves the current user based on the provided JWT token"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

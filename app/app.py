@@ -9,7 +9,6 @@ from .routers import users, tasks
 from .core.errors import AppError
 import json
 
-
 # (optional) if you set up minimal logging in app/core/logging.py, enable it:
 try:
     from .core.logging import setup_logging
@@ -20,20 +19,24 @@ else:
 
 app = FastAPI(title="Task Management API")
 
-# ---- Global handler for domain errors -> uniform HTTP JSON ----
 @app.exception_handler(AppError)
 async def handle_app_error(request: Request, exc: AppError):
+    """input: AppError with code, message, http_status
+       output: JSON response with error details
+       uniform error handling for domain errors"""
     payload = {"error": {"code": exc.code, "message": exc.message}}
     print(json.dumps(payload, ensure_ascii=False, indent=2))
     return JSONResponse(status_code=exc.http_status, content=payload)
 
-# ---- Normalize paths like //register -> /register (keeps tests happy) ----
 @app.middleware("http")
 async def collapse_slashes(request: Request, call_next):
-    path = request.scope.get("path", "")
-    if "//" in path:
-        request.scope["path"] = re.sub(r"/{2,}", "/", path)
-    return await call_next(request)
+  """input: Request with path like /register or //register
+     output: Request with normalized path like /register
+     middleware to ensure no double slashes in paths"""
+  path = request.scope.get("path", "")
+  if "//" in path:
+    request.scope["path"] = re.sub(r"/{2,}", "/", path)
+  return await call_next(request)
 
 # ---- CORS (prep for a local frontend on 3000/5173, etc.) ----
 app.add_middleware(
@@ -54,9 +57,11 @@ Base.metadata.create_all(bind=engine)
 app.include_router(users.router)   # /register, /login
 app.include_router(tasks.router)   # /tasks, /tasks/{id}
 
-# ---- Friendly landing page at "/" ----
 @app.get("/", response_class=HTMLResponse)
 def index():
+    """input: GET /
+       output: HTML landing page with API info
+       simple HTML response to show API is running"""
     return """
 <!doctype html>
 <html lang="en">

@@ -12,14 +12,23 @@ router = APIRouter(prefix="/tasks")
 
 @router.post("", response_model=schemas.TaskOut)
 def add_task(task_in: schemas.TaskCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """input: TaskCreate schema
+       output: TaskOut schema
+       Add a new task for the current user"""
     return tasks_service.add_task(db, current_user=current_user, description=task_in.description)
 
 @router.get("", response_model=List[schemas.TaskOut])
 def list_tasks(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """input: None
+       output: List of TaskOut schemas
+       List all tasks for the current user"""
     return tasks_service.list_tasks(db, current_user=current_user)
 
 @router.put("/{task_id}", response_model=schemas.TaskOut)
 def update_task(task_id: int, task_up: schemas.TaskUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """input: TaskUpdate schema
+       output: TaskOut schema
+       Update an existing task for the current user"""
     return tasks_service.update_task(
         db,
         current_user=current_user,
@@ -30,5 +39,8 @@ def update_task(task_id: int, task_up: schemas.TaskUpdate, db: Session = Depends
 
 @router.delete("/{task_id}")
 def delete_task(task_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """input: task_id (int)
+       output: None
+       Delete a task for the current user"""
     tasks_service.delete_task(db, current_user=current_user, task_id=task_id)
     return {"message": "Task deleted successfully"}

@@ -2,8 +2,6 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, UniqueConst
 from sqlalchemy.orm import relationship
 from ..database import Base
 
-# Purpose: Defines the database models for User and Task entities
-
 class User(Base):
     __tablename__ = "users"
 

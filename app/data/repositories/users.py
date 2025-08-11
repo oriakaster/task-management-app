@@ -5,19 +5,25 @@ from sqlalchemy.exc import SQLAlchemyError
 from ...core.errors import DatabaseError
 
 def find_by_username(db: Session, username: str) -> models.User | None:
-    """Safe finder for login/duplicate checks: returns user or None (no exceptions)."""
+    """input: username; 
+       output: User or None(if the user doesn't exist).
+       find the user by username."""
     return db.query(models.User).filter(models.User.username == username).first()
 
 def get_by_username(db: Session, username: str) -> models.User:
-    """Strict getter: raise 404 if the user doesn't exist."""
+    """input: username; 
+       output: User;
+       get the user by username;"""
     user = find_by_username(db, username)
     if not user:
         raise UserNotFoundError(username)
     return user
 
 def create_user(db: Session, *, username: str, password_hash: str) -> models.User:
-    """Create a user; raise 400 if the username is already taken."""
-    if find_by_username(db, username):  # <-- use the safe finder here
+    """input: username, password_hash;
+       output: User;
+       create a new user with the given username and password hash."""
+    if find_by_username(db, username):  
         raise UsernameTakenError(username)
     user = models.User(username=username, password_hash=password_hash)
     try:
@@ -29,7 +35,9 @@ def create_user(db: Session, *, username: str, password_hash: str) -> models.Use
         raise DatabaseError() from e
 
 def get_by_id(db: Session, user_id: int) -> models.User:
-    """Get user by ID; raise 404 if not found."""
+    """input: user_id;
+       output: User;
+       get the user by user_id;"""
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise UserNotFoundError(f"id:{user_id}")

@@ -10,11 +10,9 @@ from ..data import models
 logger = logging.getLogger(__name__)
 
 def register_user(db: Session, *, username: str, password: str) -> models.User:
-    """Idempotent registration.
-    - If the user doesn't exist -> create and return (200).
-    - If the user exists and password matches -> return existing (200).
-    - If the user exists and password doesn't match -> 409 Conflict.
-    """
+    """input: username and password
+       output: the created user object
+       Register a new user with the given username and password"""
     existing = users_repo.find_by_username(db, username)
     if existing:
         if verify_password(password, existing.password_hash):
@@ -29,6 +27,9 @@ def register_user(db: Session, *, username: str, password: str) -> models.User:
     return user
 
 def authenticate_user(db: Session, *, username: str, password: str) -> Optional[models.User]:
+    """input: username and password
+       output: the authenticated user object or None
+       Authenticate a user with the given username and password"""
     user = users_repo.find_by_username(db, username)
     if not user or not verify_password(password, user.password_hash):
         logger.warning("Authentication failed for user %s", username)

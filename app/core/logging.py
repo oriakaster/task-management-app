@@ -3,12 +3,7 @@ import logging
 import logging.config
 
 def setup_logging():
-    """
-    Minimal, quiet logging:
-      - Libraries (uvicorn, etc.) at WARNING
-      - Your app (app.*) at INFO
-      - Simple, readable format
-    """
+    """Configure the logging for the application."""
     logging.config.dictConfig({
         "version": 1,
         "disable_existing_loggers": False,
