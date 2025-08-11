@@ -17,3 +17,9 @@ __pycache__/
 node_modules/
 frontend/node_modules/
 frontend/.vite/
+
+# Backend
+app/.env
+
+# Frontend
+frontend/.env

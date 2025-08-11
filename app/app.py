@@ -8,9 +8,10 @@ from .data import models  # ensure models are imported so tables register
 from .routers import users, tasks
 from .core.errors import AppError
 import json
+from app.core.settings import get_settings
 from app.middleware.error_handler import ErrorHandlingMiddleware
 
-# (optional) if you set up minimal logging in app/core/logging.py, enable it:
+# ---- Setup logging (if available) ----
 try:
     from .core.logging import setup_logging
 except ModuleNotFoundError:
@@ -18,16 +19,11 @@ except ModuleNotFoundError:
 else:
     setup_logging()
 
+# ---- Create FastAPI app instance ----
+settings = get_settings()
 app = FastAPI(title="Task Management API")
 app.add_middleware(ErrorHandlingMiddleware)
-# @app.exception_handler(AppError)
-# async def handle_app_error(request: Request, exc: AppError):
-#     """input: AppError with code, message, http_status
-#        output: JSON response with error details
-#        uniform error handling for domain errors"""
-#     payload = {"error": {"code": exc.code, "message": exc.message}}
-#     print(json.dumps(payload, ensure_ascii=False, indent=2))
-#     return JSONResponse(status_code=exc.http_status, content=payload)
+
 
 @app.middleware("http")
 async def collapse_slashes(request: Request, call_next):
@@ -39,13 +35,11 @@ async def collapse_slashes(request: Request, call_next):
     request.scope["path"] = re.sub(r"/{2,}", "/", path)
   return await call_next(request)
 
+
 # ---- CORS (prep for a local frontend on 3000/5173, etc.) ----
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000", "http://127.0.0.1:3000",
-        "http://localhost:5173", "http://127.0.0.1:5173",
-    ],
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,8 +49,9 @@ app.add_middleware(
 Base.metadata.create_all(bind=engine)
 
 # ---- Routers ----
-app.include_router(users.router)   # /register, /login
-app.include_router(tasks.router)   # /tasks, /tasks/{id}
+app.include_router(users.router)   
+app.include_router(tasks.router)   
+
 
 @app.get("/", response_class=HTMLResponse)
 def index():
