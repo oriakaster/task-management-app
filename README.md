@@ -1,260 +1,231 @@
-# Task Management App — FastAPI + React (Vite)
+# Task Management App — FastAPI + React
 
-A simple task manager with a FastAPI backend and a React (Vite) frontend.
-
----
-
-## Table of Contents
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Project Structure](#project-structure)
-- [Backend Setup (FastAPI)](#backend-setup-fastapi)
-- [Frontend Setup (React + Vite)](#frontend-setup-react--vite)
-- [Run the App](#run-the-app)
-- [Environment Variables](#environment-variables)
-- [API Docs](#api-docs)
-- [Troubleshooting](#troubleshooting)
-- [Useful Scripts](#useful-scripts)
-- [Production Notes](#production-notes)
+A full‑stack task manager with a FastAPI backend (JWT auth) and a React (Vite) frontend.  
+Clean error handling (middleware), clear API schemas, and simple local setup.
 
 ---
 
-## Tech Stack
-**Backend:** FastAPI, SQLAlchemy, Uvicorn  
-**Frontend:** React 18, Vite, React Router  
-**Database:** SQLite by default (swap to Postgres/MySQL if desired)
+## ✨ Features
+- **Auth**: Register & login with JWT (Bearer token)
+- **Tasks**: Create, list, update (partial), delete – scoped per user
+- **Consistent errors**: Unified JSON `{ "error": { "code", "message", "fields?" } }`
+- **Typed I/O**: Pydantic schemas for inputs/outputs
+- **Front‑end**: Minimal React UI you can easily restyle
 
 ---
 
-## Prerequisites
-- **Python** ≥ 3.10 (recommended)
-- **Node.js** ≥ 18 and **npm**
-- **Git** (optional but recommended)
-
-Check versions:
-```bash
-python --version
-node --version
-npm --version
+## 🗂️ Project structure (top‑level)
 ```
+Task_Management_App_Assignment/
+├─ app/                  # Backend (FastAPI)
+│  ├─ app.py             # FastAPI app, includes routers & middleware
+│  ├─ core/
+│  │  ├─ settings.py     # Loads config from app/.env
+│  │  └─ errors.py       # AppError + specific error classes
+│  ├─ middleware/
+│  │  └─ error_handler.py # Global error middleware (uniform JSON)
+│  ├─ data/              # Models, repositories (users, tasks)
+│  ├─ database.py        # SQLAlchemy engine/session + get_db dep
+│  └─ ...                # routers/services (users, tasks, auth)
+├─ frontend/             # Frontend (React + Vite)
+│  ├─ src/
+│  │  ├─ api.js          # HTTP helper (uses VITE_API_URL)
+│  │  ├─ auth.jsx        # Auth context (stores token/username)
+│  │  ├─ pages/          # AuthPage.jsx, TasksPage.jsx
+│  │  └─ components/     # Navbar, TaskForm, TaskItem, etc.
+│  └─ ...                # index.html, vite config, CSS
+└─ ...
+```
+
+> Names may vary slightly in your repo; commands below match what you’re running now.
 
 ---
 
-## Project Structure
-```
-.
-├── backend/
-│   ├── app/                    # FastAPI code (routers, models, crud, etc.)
-│   ├── requirements.txt
-│   └── .env                    # Backend config (see below)
-├── frontend/
-│   ├── index.html
-│   ├── package.json
-│   ├── vite.config.ts|js
-│   └── .env                    # Frontend config (see below)
-└── README.md
-```
-> If your folders are named differently, adjust paths accordingly.
+## ✅ Prerequisites
+- **Python 3.11+**
+- **Node 18+** and **npm** (or pnpm/yarn)
+- **VS Code** (optional, recommended)
+- **SQLite** (bundled with Python – no extra install)
 
 ---
 
-## Backend Setup (FastAPI)
+## ⚙️ Configuration (env files)
 
-1) **Create and activate a virtual environment**
-
-**Windows (PowerShell):**
-```powershell
-cd backend
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+### Backend — `app/.env`
+Create a file `app/.env`:
 ```
-
-**macOS/Linux (bash/zsh):**
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate
-```
-
-2) **Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-3) **Configure environment**
-Create `backend/.env` (see [Environment Variables](#environment-variables)).
-
-4) **Initialize the database**
-If your app creates tables on startup, you can skip. Otherwise, run your migrations (if you use Alembic):
-```bash
-# Example only—use if Alembic is configured
-alembic upgrade head
-```
-
-5) **Run the server**
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-Your API will be available at http://localhost:8000
-
----
-
-## Frontend Setup (React + Vite)
-
-1) **Install dependencies**
-```bash
-cd frontend
-npm install
-```
-
-2) **Configure environment**
-Create `frontend/.env` (see [Environment Variables](#environment-variables)).
-
-3) **Run the dev server**
-```bash
-npm run dev
-```
-Vite will print a local URL, typically http://localhost:5173
-
----
-
-## Run the App
-
-- Start **backend** (port **8000**):
-  ```bash
-  # from backend/
-  uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-  ```
-
-- Start **frontend** (port **5173**):
-  ```bash
-  # from frontend/
-  npm run dev
-  ```
-
-- Open the UI in your browser:
-  ```
-  http://localhost:5173
-  ```
-
-- The frontend calls the backend at:
-  ```
-  http://localhost:8000
-  ```
-  (configurable via env vars below)
-
----
-
-## Environment Variables
-
-### Backend (`backend/.env`)
-```env
-# Environment
 APP_ENV=dev
-
-# Database (SQLite by default)
 DATABASE_URL=sqlite:///./app.db
-# Example Postgres:
-# DATABASE_URL=postgresql+psycopg2://user:password@localhost:5432/mydb
-
-# CORS (frontend origin)
-CORS_ORIGINS=http://localhost:5173
-
-# Auth (if your app uses JWT)
-SECRET_KEY=change-me
+SECRET_KEY=change-me                # use a strong random string
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
+CORS_ORIGINS=http://127.0.0.1:5173,http://localhost:5173
 ```
 
-Make sure your FastAPI app loads these (e.g., with `pydantic-settings` or `python-dotenv`).
+> Tip (Windows PowerShell): generate a strong secret
+> ```powershell
+> python -c "import secrets; print(secrets.token_urlsafe(32))"
+> ```
 
-### Frontend (`frontend/.env`)
-```env
-# Where the frontend sends API calls
-VITE_API_BASE_URL=http://localhost:8000
+### Frontend — `frontend/.env` (dev)
+Create `frontend/.env`:
 ```
-In React code: `import.meta.env.VITE_API_BASE_URL`
+VITE_API_URL=http://127.0.0.1:8000
+```
+
+### Frontend — `frontend/.env.production` (build)
+```
+VITE_API_URL=https://api.your-domain.com
+```
+
+> Don’t commit real secrets. Commit `app/.env.example` and `frontend/.env.example` instead.
 
 ---
 
-## API Docs
-FastAPI auto-generates docs:
-- **Swagger UI:** http://localhost:8000/docs
-- **OpenAPI JSON:** http://localhost:8000/openapi.json
+## ▶️ Running locally (two terminals)
 
-Use this to explore endpoints and try requests interactively.
-
----
-
-## Troubleshooting
-
-**Duplicate `node_modules` / multiple frontend folders**
-- Ensure you only have **one** frontend project folder (e.g., `frontend/`).
-- If you accidentally created two (e.g., `task-ui/` and `frontend/`), keep one and delete the other.
-- After cleaning, reinstall:
-  ```bash
-  cd frontend
-  # macOS/Linux
-  rm -rf node_modules package-lock.json
-  npm install
-  # Windows (PowerShell)
-  rmdir /s /q node_modules
-  del /f /q package-lock.json
-  npm install
-  ```
-
-**CORS errors in the browser**
-- Add your frontend origin (e.g., `http://localhost:5173`) to `CORS_ORIGINS` in `backend/.env`.
-- Ensure FastAPI enables CORS:
-  ```python
-  from fastapi.middleware.cors import CORSMiddleware
-
-  app.add_middleware(
-      CORSMiddleware,
-      allow_origins=[origins_from_env],  # e.g., ["http://localhost:5173"]
-      allow_credentials=True,
-      allow_methods=["*"],
-      allow_headers=["*"],
-  )
-  ```
-
-**Port already in use**
-- Backend 8000: stop the other process or change `--port`.
-- Frontend 5173: Vite usually picks another port automatically, or `npm run dev -- --port 5174`.
-
-**Virtual environment not activating (Windows)**
+### 1) Backend (FastAPI)
 ```powershell
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+# from the project root
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+pip install -U pip
+pip install "uvicorn[standard]" fastapi pydantic pydantic-settings sqlalchemy python-jose passlib[bcrypt]
+
+# run the API
+uvicorn app.app:app --reload --host 127.0.0.1 --port 8000
 ```
+Open Swagger: http://127.0.0.1:8000/docs
 
-**Database not created / permission issues**
-- If using SQLite, ensure `DATABASE_URL=sqlite:///./app.db` and that the process has write permission to the folder.
-- For Postgres/MySQL, verify the connection string and that the database exists.
-
----
-
-## Useful Scripts
-
-**Backend**
-```bash
-# from backend/
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-**Frontend**
-```bash
-# from frontend/
+### 2) Frontend (Vite)
+```powershell
+cd frontend
 npm install
 npm run dev
-npm run build         # build for production
-npm run preview       # preview the production build
+```
+Open the app: the console will print a URL (usually http://127.0.0.1:5173).
+
+---
+
+## 🧪 Tests
+If your repo includes pytest tests (e.g., `app/tests/test_edges.py`):
+
+```powershell
+# in a new terminal, with backend still running
+.\.venv\Scripts\Activate.ps1
+
+pip install pytest httpx
+pytest -q
+```
+
+There’s also a convenience test you can use to verify the required endpoints quickly. If needed, set `BASE_URL` for tests:
+```powershell
+$env:BASE_URL="http://127.0.0.1:8000"
+pytest -q
 ```
 
 ---
 
-## Production Notes
-- Build the frontend and serve the static files via a web server (e.g., Nginx) or from FastAPI if you prefer.
-- Run FastAPI behind a process manager with multiple workers (e.g., `gunicorn -k uvicorn.workers.UvicornWorker -w 2`).
-- Use a managed database for durability and backups instead of SQLite.
-- Configure HTTPS and a reverse proxy for security and performance.
+## 🔌 API summary (contract)
+
+### Auth
+- `POST /register` — create user  
+  **Request** `{"username": "...", "password": "..."}`  
+  **Response** `{"id": 1, "username": "..."}`
+
+- `POST /login` — get JWT  
+  **Request** `{"username": "...", "password": "..."}`  
+  **Response** `{"access_token": "...", "token_type": "bearer"}`
+
+> Send the token on subsequent requests: `Authorization: Bearer <token>`
+
+### Tasks
+- `GET /tasks` — list my tasks → **200** `[{ TaskOut }]`
+- `POST /tasks` — create task → **200** `{ TaskOut }`  
+  body: `{"description":"..."}`
+- `PUT /tasks/{id}` — partial update → **200** `{ TaskOut }`  
+  body: `{"description":"..."}` or `{"completed": true}`
+- `DELETE /tasks/{id}` — delete → **200** `{ "message": "deleted" }` (shape may vary)
+
+### Errors (uniform shape)
+All failures come back as JSON:
+```json
+{ "error": { "code": "SOME_CODE", "message": "Human readable", "fields": { "field": ["msg"] } } }
+```
+Common codes:
+- `INVALID_TOKEN` (401) — missing/invalid/expired JWT
+- `USERNAME_TAKEN` (409) — registering an existing username
+- `USER_NOT_FOUND` (404) — login with unknown username
+- `INVALID_PASSWORD` (401) — login with wrong password
+- `TASK_NOT_FOUND` (404) — updating/deleting a missing task
+- `TASK_FORBIDDEN` (403) — touching someone else’s task
+- `VALIDATION_ERROR` (422) — input validation failed
+- `DATABASE_ERROR` / `INTERNAL_SERVER_ERROR` (500) — server error (often includes `errorId`)
+
+---
+
+## 🧠 How things fit together
+
+- **Schemas (Pydantic)**  
+  - *Request models*: `UserCreate`, `LoginRequest`, `TaskCreate`, `TaskUpdate`  
+  - *Response models*: `UserOut`, `TaskOut`, `Token`  
+  They validate incoming data and shape outbound data (and power Swagger).
+
+- **Auth flow**  
+  `POST /login` returns `access_token`. Frontend stores it (context + localStorage) and sends it as `Authorization: Bearer ...`.
+
+- **Error middleware**  
+  `app/middleware/error_handler.py` intercepts exceptions and produces the consistent JSON shape above (plus field maps for 422). It also normalizes plain 404/405 responses.
+
+- **DB**  
+  Default is SQLite (`DATABASE_URL=sqlite:///./app.db`). For other DBs set `DATABASE_URL` (e.g., Postgres) and the app will use it automatically.
+
+---
+
+## 🧩 Environment tips
+
+- If you see **`SECRET_KEY Field required`** on startup, add `SECRET_KEY` to `app/.env` (or give it a default in `settings.py`).
+- Change `CORS_ORIGINS` to match your frontend origin (dev is usually `http://127.0.0.1:5173`).
+- In the frontend, Vite reads `VITE_*` vars; restart `npm run dev` after changing `.env`.
+
+---
+
+## 🗄️ Viewing the database
+Using SQLite? Install VS Code extension **“SQLite” (alexcvzz)**, then open `app.db` and browse tables (`users`, `tasks`).  
+Or use SQLTools with the SQLite driver.
+
+---
+
+## 🚀 Production notes (quick)
+- Build frontend: `cd frontend && npm run build` (serves static files from `dist/`)
+- Configure **`.env.production`** in frontend to point at your real API URL
+- Put a reverse proxy (Nginx/Traefik) in front of FastAPI and frontend
+- Consider Postgres for production (`DATABASE_URL=postgresql+psycopg2://user:pass@host:5432/db`)
+
+---
+
+## 🤝 Troubleshooting
+
+- **Browser says “CORS blocked”**  
+  Ensure your frontend origin is listed in `CORS_ORIGINS` (comma‑separated) and restart the backend.
+
+- **Frontend can’t reach API**  
+  Check `VITE_API_URL` in `frontend/.env`, and confirm the backend logs show it’s listening on the right host/port.
+
+- **`sqlite3.ProgrammingError: SQLite objects created in a thread…`**  
+  The app configures SQLite with `check_same_thread=False` automatically; ensure you run from project root so the DB path is correct.
+
+- **404/405 “Not found” or “Method not allowed”**  
+  The middleware rewrites these to your error shape (unless requested as HTML). Double‑check the route and HTTP verb.
+
+---
+
+## 📜 License
+For coursework/demo use; adapt as needed.
+
+---
+
+## 🙋 Need help?
+Open an issue or ping me with your exact error (logs + request) and I’ll point you to the fix.
+
