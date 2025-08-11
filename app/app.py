@@ -36,7 +36,7 @@ async def collapse_slashes(request: Request, call_next):
   return await call_next(request)
 
 
-# ---- CORS (prep for a local frontend on 3000/5173, etc.) ----
+# ---- CORS (prep for a local frontend) ----
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
