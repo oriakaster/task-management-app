@@ -29,6 +29,7 @@ def create_user(db: Session, *, username: str, password_hash: str) -> models.Use
         raise DatabaseError() from e
 
 def get_by_id(db: Session, user_id: int) -> models.User:
+    """Get user by ID; raise 404 if not found."""
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise UserNotFoundError(f"id:{user_id}")
