@@ -11,6 +11,15 @@ export default function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
+    // Map backend error codes -> messages shown in the UI
+  const mapAuthError = (ex) => {
+    if (ex?.code === "USER_NOT_FOUND")   return "Username does not exist, please register";
+    if (ex?.code === "INVALID_PASSWORD") return "Password is incorrect, please try again";
+    if (ex?.code === "USERNAME_TAKEN")   return "That username is already taken, please choose another";
+    if (ex?.status === 401)              return "Invalid username or password";
+    return ex?.message || "Something went wrong";
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     setErr("");
@@ -22,7 +31,7 @@ export default function AuthPage() {
       await login(username, password);
       nav("/tasks");
     } catch (ex) {
-      setErr(ex.message || "Failed");
+      setErr(mapAuthError(ex));
     } finally {
       setBusy(false);
     }

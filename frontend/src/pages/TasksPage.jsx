@@ -10,6 +10,16 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
+  // Map backend error codes -> friendly messages for the UI
+  const mapTaskError = (e) => {
+    if (!e) return "Something went wrong";
+    if (e.code === "TASK_NOT_FOUND")   return "That task was deleted or doesn't exist.";
+    if (e.code === "TASK_FORBIDDEN")   return "You don't have access to this task.";
+    if (e.code === "DATABASE_ERROR")   return "Database error. Please try again.";
+    if (e.code === "INTERNAL_SERVER_ERROR") return "Unexpected error. Try again.";
+    return e.message || "Something went wrong";
+  };
+
   const load = async () => {
     setErr("");
     try {
@@ -26,23 +36,43 @@ export default function TasksPage() {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
   const addTask = async (description) => {
-    const t = await api.addTask(token, description);
-    setTasks((prev) => [t, ...prev]);
+    setErr("");
+    try {
+      const t = await api.addTask(token, description);
+      setTasks((prev) => [t, ...prev]); 
+    } catch (e) {
+      setErr(mapTaskError(e));
+    }
   };
 
   const toggleTask = async (id, completed) => {
-    const t = await api.updateTask(token, id, { completed });
-    setTasks((prev) => prev.map((x) => (x.id === id ? t : x)));
+    setErr("");
+    try {
+      const t = await api.updateTask(token, id, { completed });
+      setTasks((prev) => prev.map((x) => (x.id === id ? t : x)));
+    } catch (e) {
+      setErr(mapTaskError(e));
+    }
   };
 
   const editTask = async (id, description) => {
-    const t = await api.updateTask(token, id, { description });
-    setTasks((prev) => prev.map((x) => (x.id === id ? t : x)));
+    setErr("");
+    try {
+      const t = await api.updateTask(token, id, { description });
+      setTasks((prev) => prev.map((x) => (x.id === id ? t : x)));
+    } catch (e) {
+      setErr(mapTaskError(e));
+    }
   };
 
   const deleteTask = async (id) => {
-    await api.deleteTask(token, id);
-    setTasks((prev) => prev.filter((x) => x.id !== id));
+    setErr("");
+    try {
+      await api.deleteTask(token, id);
+      setTasks((prev) => prev.filter((x) => x.id !== id));
+    } catch (e) {
+      setErr(mapTaskError(e));
+    }
   };
 
   return (

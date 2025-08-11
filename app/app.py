@@ -8,6 +8,7 @@ from .data import models  # ensure models are imported so tables register
 from .routers import users, tasks
 from .core.errors import AppError
 import json
+from app.middleware.error_handler import ErrorHandlingMiddleware
 
 # (optional) if you set up minimal logging in app/core/logging.py, enable it:
 try:
@@ -18,15 +19,15 @@ else:
     setup_logging()
 
 app = FastAPI(title="Task Management API")
-
-@app.exception_handler(AppError)
-async def handle_app_error(request: Request, exc: AppError):
-    """input: AppError with code, message, http_status
-       output: JSON response with error details
-       uniform error handling for domain errors"""
-    payload = {"error": {"code": exc.code, "message": exc.message}}
-    print(json.dumps(payload, ensure_ascii=False, indent=2))
-    return JSONResponse(status_code=exc.http_status, content=payload)
+app.add_middleware(ErrorHandlingMiddleware)
+# @app.exception_handler(AppError)
+# async def handle_app_error(request: Request, exc: AppError):
+#     """input: AppError with code, message, http_status
+#        output: JSON response with error details
+#        uniform error handling for domain errors"""
+#     payload = {"error": {"code": exc.code, "message": exc.message}}
+#     print(json.dumps(payload, ensure_ascii=False, indent=2))
+#     return JSONResponse(status_code=exc.http_status, content=payload)
 
 @app.middleware("http")
 async def collapse_slashes(request: Request, call_next):

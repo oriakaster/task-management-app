@@ -1,12 +1,18 @@
 # app/core/errors.py
 from dataclasses import dataclass
+from typing import Any, Dict, Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class AppError(Exception):
+    """Base exception for all application errors"""
     code: str
     message: str
     http_status: int = 400
-
+    details: Optional[Dict[str, Any]] = None
+    
 # Auth / Users
 class UserNotFoundError(AppError):
     def __init__(self, username: str):
@@ -19,6 +25,10 @@ class UsernameTakenError(AppError):
 class InvalidCredentialsError(AppError):
     def __init__(self):
         super().__init__("INVALID_CREDENTIALS", "Invalid username or password", 401)
+        
+class InvalidPasswordError(AppError):
+    def __init__(self):
+        super().__init__("INVALID_PASSWORD", "Password is incorrect", 401)
 
 # Tasks
 class TaskNotFoundError(AppError):
