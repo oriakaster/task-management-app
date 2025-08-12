@@ -65,7 +65,7 @@ def test_login_wrong_password_401_with_code(client):
     r = login(client, username, "WRONGPASS")
     assert r.status_code == 401
     # our global handler (InvalidCredentialsError) should set this code
-    assert r.json().get("error", {}).get("code") == "INVALID_CREDENTIALS"
+    assert r.json().get("error", {}).get("code") == "INVALID_PASSWORD"
 
 def test_tasks_requires_auth_header_401(client):
     r = client.get(f"{BASE_URL}/tasks")

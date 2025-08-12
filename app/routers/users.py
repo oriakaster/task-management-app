@@ -23,4 +23,4 @@ def login(creds: schemas.LoginRequest, db: Session = Depends(get_db)):
        authenticate a user and return a JWT token"""
     user = users_service.authenticate_user(db, username=creds.username, password=creds.password)
     token = create_access_token({"sub": user.username})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token}

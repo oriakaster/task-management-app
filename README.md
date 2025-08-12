@@ -5,51 +5,38 @@ Clean error handling (middleware), clear API schemas, and simple local setup.
 
 ---
 
-## ✨ Features
+## Features
 - **Auth**: Register & login with JWT (Bearer token)
 - **Tasks**: Create, list, update (partial), delete – scoped per user
 - **Consistent errors**: Unified JSON `{ "error": { "code", "message", "fields?" } }`
 - **Typed I/O**: Pydantic schemas for inputs/outputs
-- **Front‑end**: Minimal React UI you can easily restyle
+- **Front‑end**: Minimal React UI
 
 ---
 
-## 🗂️ Project structure (top‑level)
-```
-Task_Management_App_Assignment/
-├─ app/                  # Backend (FastAPI)
-│  ├─ app.py             # FastAPI app, includes routers & middleware
-│  ├─ core/
-│  │  ├─ settings.py     # Loads config from app/.env
-│  │  └─ errors.py       # AppError + specific error classes
-│  ├─ middleware/
-│  │  └─ error_handler.py # Global error middleware (uniform JSON)
-│  ├─ data/              # Models, repositories (users, tasks)
-│  ├─ database.py        # SQLAlchemy engine/session + get_db dep
-│  └─ ...                # routers/services (users, tasks, auth)
-├─ frontend/             # Frontend (React + Vite)
-│  ├─ src/
-│  │  ├─ api.js          # HTTP helper (uses VITE_API_URL)
-│  │  ├─ auth.jsx        # Auth context (stores token/username)
-│  │  ├─ pages/          # AuthPage.jsx, TasksPage.jsx
-│  │  └─ components/     # Navbar, TaskForm, TaskItem, etc.
-│  └─ ...                # index.html, vite config, CSS
-└─ ...
-```
-
-> Names may vary slightly in your repo; commands below match what you’re running now.
+## Tech Stack
+**Backend:** FastAPI, SQLAlchemy, Uvicorn  
+**Frontend:** React 18, Vite, React Router  
+**Database:** SQLite by default (swap to Postgres/MySQL if desired)
 
 ---
 
-## ✅ Prerequisites
+## Prerequisites
 - **Python 3.11+**
 - **Node 18+** and **npm** (or pnpm/yarn)
 - **VS Code** (optional, recommended)
 - **SQLite** (bundled with Python – no extra install)
 
+Check versions:
+```bash
+python --version
+node --version
+npm --version
+```
+
 ---
 
-## ⚙️ Configuration (env files)
+## Environment Variables
 
 ### Backend — `app/.env`
 Create a file `app/.env`:
@@ -73,43 +60,71 @@ Create `frontend/.env`:
 VITE_API_URL=http://127.0.0.1:8000
 ```
 
-### Frontend — `frontend/.env.production` (build)
-```
-VITE_API_URL=https://api.your-domain.com
-```
-
 > Don’t commit real secrets. Commit `app/.env.example` and `frontend/.env.example` instead.
 
 ---
 
-## ▶️ Running locally (two terminals)
+## Running locally (two terminals)
 
-### 1) Backend (FastAPI)
+## Backend Setup (FastAPI)
+
+1) **Create and activate a virtual environment**
+
+**Windows (PowerShell):**
 ```powershell
 # from the project root
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+```
 
-pip install -U pip
-pip install "uvicorn[standard]" fastapi pydantic pydantic-settings sqlalchemy python-jose passlib[bcrypt]
+**macOS/Linux (bash/zsh):**
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
 
-# run the API
+2) **Install dependencies**
+```powershell
+pip install -r requirements.txt
+```
+
+3) **Configure environment**
+Create `app/.env` (see [Environment Variables](#environment-variables)).
+
+4) **Run the server**
+```powershell
 uvicorn app.app:app --reload --host 127.0.0.1 --port 8000
 ```
-Open Swagger: http://127.0.0.1:8000/docs
+Your API will be available at http://127.0.0.1:8000/docs 
+Use this to explore endpoints and try requests interactively.
 
-### 2) Frontend (Vite)
+---
+## Frontend Setup (React + Vite)
+
+in a new terminal:
+
+1) **Install dependencies**
 ```powershell
+# in a new terminal
+.\.venv\Scripts\Activate.ps1
 cd frontend
 npm install
+```
+
+2) **Configure environment**
+Create `frontend/.env` (see [Environment Variables](#environment-variables)).
+
+3) **Run the dev server**
+```powershell
 npm run dev
 ```
-Open the app: the console will print a URL (usually http://127.0.0.1:5173).
+Open the app: the console will print a URL (usually http://127.0.0.1:5173 or http://localhost:5173/).
+Vite will print the exact URL in the terminal.
 
 ---
 
-## 🧪 Tests
-If your repo includes pytest tests (e.g., `app/tests/test_edges.py`):
+## Tests
+If you want to run the tests:
 
 ```powershell
 # in a new terminal, with backend still running
@@ -119,12 +134,12 @@ pip install pytest httpx
 pytest -q
 ```
 
-There’s also a convenience test you can use to verify the required endpoints quickly. If needed, set `BASE_URL` for tests:
-```powershell
-$env:BASE_URL="http://127.0.0.1:8000"
-pytest -q
-```
+you can also run specific test file, for example:
 
+```
+pip install pytest httpx
+pytest -q app/tests/test_ver.py
+```
 ---
 
 ## 🔌 API summary (contract)
@@ -161,51 +176,30 @@ Common codes:
 - `TASK_NOT_FOUND` (404) — updating/deleting a missing task
 - `TASK_FORBIDDEN` (403) — touching someone else’s task
 - `VALIDATION_ERROR` (422) — input validation failed
-- `DATABASE_ERROR` / `INTERNAL_SERVER_ERROR` (500) — server error (often includes `errorId`)
+- `DATABASE_ERROR` / `INTERNAL_SERVER_ERROR` (500) — server error
 
 ---
 
-## 🧠 How things fit together
+##  Short Explanation
+- **What it is:** A full-stack Task Manager.
+Backend: FastAPI + SQLAlchemy + Pydantic (JWT auth).
+Frontend: React (Vite) SPA.
 
-- **Schemas (Pydantic)**  
-  - *Request models*: `UserCreate`, `LoginRequest`, `TaskCreate`, `TaskUpdate`  
-  - *Response models*: `UserOut`, `TaskOut`, `Token`  
-  They validate incoming data and shape outbound data (and power Swagger).
+- **What it does:** Users can register and log in, then create, list, update, and delete their own tasks. Each task has description and completed.
 
-- **Auth flow**  
-  `POST /login` returns `access_token`. Frontend stores it (context + localStorage) and sends it as `Authorization: Bearer ...`.
+- **Security:** After login, the frontend stores a JWT. Every tasks request sends Authorization: Bearer <token>. The backend validates the token and scopes actions to the current user (can’t touch others’ tasks).
 
-- **Error middleware**  
-  `app/middleware/error_handler.py` intercepts exceptions and produces the consistent JSON shape above (plus field maps for 422). It also normalizes plain 404/405 responses.
+- **API endpoints:** POST /register, POST /login, GET /tasks, POST /tasks, PUT /tasks/{id}, DELETE { "message": "Task deleted successfully" }.
 
-- **DB**  
-  Default is SQLite (`DATABASE_URL=sqlite:///./app.db`). For other DBs set `DATABASE_URL` (e.g., Postgres) and the app will use it automatically.
+- **Validation & schemas:** Pydantic models validate request bodies (UserCreate, TaskCreate, TaskUpdate) and shape responses (UserOut, TaskOut, Token).
 
----
+- **Data & startup:** Uses SQLite by default (app.db). Tables are created on startup if missing.
 
-## 🧩 Environment tips
-
-- If you see **`SECRET_KEY Field required`** on startup, add `SECRET_KEY` to `app/.env` (or give it a default in `settings.py`).
-- Change `CORS_ORIGINS` to match your frontend origin (dev is usually `http://127.0.0.1:5173`).
-- In the frontend, Vite reads `VITE_*` vars; restart `npm run dev` after changing `.env`.
+- **Frontend flow:** AuthPage handles login/register, TasksPage shows and edits tasks. api.js attaches the JWT automatically and normalizes error responses for friendly messages.
 
 ---
 
-## 🗄️ Viewing the database
-Using SQLite? Install VS Code extension **“SQLite” (alexcvzz)**, then open `app.db` and browse tables (`users`, `tasks`).  
-Or use SQLTools with the SQLite driver.
-
----
-
-## 🚀 Production notes (quick)
-- Build frontend: `cd frontend && npm run build` (serves static files from `dist/`)
-- Configure **`.env.production`** in frontend to point at your real API URL
-- Put a reverse proxy (Nginx/Traefik) in front of FastAPI and frontend
-- Consider Postgres for production (`DATABASE_URL=postgresql+psycopg2://user:pass@host:5432/db`)
-
----
-
-## 🤝 Troubleshooting
+## Troubleshooting
 
 - **Browser says “CORS blocked”**  
   Ensure your frontend origin is listed in `CORS_ORIGINS` (comma‑separated) and restart the backend.
@@ -219,13 +213,4 @@ Or use SQLTools with the SQLite driver.
 - **404/405 “Not found” or “Method not allowed”**  
   The middleware rewrites these to your error shape (unless requested as HTML). Double‑check the route and HTTP verb.
 
----
-
-## 📜 License
-For coursework/demo use; adapt as needed.
-
----
-
-## 🙋 Need help?
-Open an issue or ping me with your exact error (logs + request) and I’ll point you to the fix.
 

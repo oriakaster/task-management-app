@@ -17,9 +17,9 @@ def list_tasks(db: Session, *, current_user: models.User):
     """input: current user
        output: list of tasks for the user
        List all tasks for the given user"""
-    list_tasks = tasks_crud.list_for_user(db, user_id=current_user.id) 
-    logger.info("Listed tasks for user %s: %d tasks found", current_user.username, len(list_tasks))  
-    return list_tasks
+    list_task = tasks_crud.list_for_user(db, user_id=current_user.id) 
+    logger.info("Listed tasks for user %s: %d tasks found", current_user.username, len(list_task))  
+    return list_task
 
 def update_task(db: Session, *, current_user: models.User, task_id: int, description=None, completed=None) -> models.Task:
     """input: current user, task_id, optional description and completed status
