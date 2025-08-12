@@ -1,4 +1,3 @@
-# app/middleware/error_handler.py
 import uuid
 import logging
 from fastapi import Request, HTTPException
@@ -42,11 +41,10 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
 
         except AppError as e:
-            # Domain/business errors (e.g., USERNAME_TAKEN, TASK_FORBIDDEN, etc.)
             return _json(e.http_status, e.code, e.message, details=getattr(e, "details", None))
 
         except RequestValidationError as e:
-            # 422 validation errors -> put field map under error.fields
+            # 422 validation errors
             field_map: dict[str, list[str]] = {}
             for err in e.errors():
                 loc = err.get("loc", [])
@@ -55,25 +53,24 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             return _json(422, "VALIDATION_ERROR", "Invalid input.", fields=field_map)
 
         except HTTPException as e:
-            # Preserve status + headers; normalize message into nested error
             detail = e.detail
             msg = detail if isinstance(detail, str) else (detail.get("message") if isinstance(detail, dict) else str(detail))
             code = (detail.get("error") if isinstance(detail, dict) else None) or "HTTP_ERROR"
             return _json(e.status_code, code, msg or "HTTP error", headers=e.headers)
 
         except JWTError:
-            # Token issues -> 401 INVALID_TOKEN
+            # Token issues
             return _json(401, "INVALID_TOKEN", "Could not validate credentials",
                          headers={"WWW-Authenticate": "Bearer"})
 
         except SQLAlchemyError:
-            # DB issues -> 500 with errorId for log correlation
+            # DB issues
             err_id = str(uuid.uuid4())
             logger.exception("SQLAlchemyError %s at %s %s", err_id, request.method, request.url.path)
             return _json(500, "DATABASE_ERROR", "Something went wrong. Try again later.", error_id=err_id)
 
         except Exception:
-            # Catch-all -> 500 with errorId
+            # Catch-all for unexpected errors
             err_id = str(uuid.uuid4())
             logger.exception("Unhandled %s at %s %s", err_id, request.method, request.url.path)
             return _json(500, "INTERNAL_SERVER_ERROR", "Unexpected error. Try again later.", error_id=err_id)

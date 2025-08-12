@@ -11,7 +11,7 @@ import json
 from app.core.settings import get_settings
 from app.middleware.error_handler import ErrorHandlingMiddleware
 
-# ---- Setup logging (if available) ----
+# Setup logging (if available)
 try:
     from .core.logging import setup_logging
 except ModuleNotFoundError:
@@ -19,7 +19,7 @@ except ModuleNotFoundError:
 else:
     setup_logging()
 
-# ---- Create FastAPI app instance ----
+
 settings = get_settings()
 app = FastAPI(title="Task Management API")
 app.add_middleware(ErrorHandlingMiddleware)
@@ -36,7 +36,7 @@ async def collapse_slashes(request: Request, call_next):
   return await call_next(request)
 
 
-# ---- CORS (prep for a local frontend) ----
+# CORS (prep for a local frontend)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -45,10 +45,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---- Create DB tables (after models import) ----
+# Create DB tables
 Base.metadata.create_all(bind=engine)
 
-# ---- Routers ----
+#Routers
 app.include_router(users.router)   
 app.include_router(tasks.router)   
 

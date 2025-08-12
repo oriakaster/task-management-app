@@ -4,6 +4,7 @@ from ..database import get_db
 from .. import schemas
 from ..authentication import create_access_token
 from ..business import users as users_service
+from fastapi.security import OAuth2PasswordRequestForm
 
 # Purpose: Router for user-related endpoints
 router = APIRouter()
@@ -24,3 +25,15 @@ def login(creds: schemas.LoginRequest, db: Session = Depends(get_db)):
     user = users_service.authenticate_user(db, username=creds.username, password=creds.password)
     token = create_access_token({"sub": user.username})
     return {"access_token": token}
+
+@router.post("/token", response_model=schemas.Token)
+def issue_token(form: OAuth2PasswordRequestForm = Depends(),
+                db: Session = Depends(get_db)):
+      """input: OAuth2PasswordRequestForm
+         output: Token schema
+         authenticate a user and return a JWT token"""
+      user = users_service.authenticate_user(
+        db, username=form.username, password=form.password
+    )
+      token = create_access_token({"sub": user.username})
+      return {"access_token": token, "token_type": "bearer"}

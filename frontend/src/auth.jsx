@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
   const [username, setUsername] = useState(localStorage.getItem("username"));
 
   const login = async (u, p) => {
-    const res = await api.login(u, p); // { access_token }
+    const res = await api.login(u, p); 
     setToken(res.access_token);
     setUsername(u);
     localStorage.setItem("token", res.access_token);
@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (u, p) => {
-    await api.register(u, p); // returns { id, username }
+    await api.register(u, p); 
   };
 
   const logout = () => {

@@ -14,7 +14,7 @@ def _connect_args(url: str) -> dict:
         u = make_url(url)
         return {"check_same_thread": False} if u.drivername.startswith("sqlite") else {}
     except Exception:
-        # if parsing fails, play it safe and send no extra args
+        # if parsing fails, send no extra args
         return {}
 
 engine = create_engine(DATABASE_URL, connect_args=_connect_args(DATABASE_URL))
@@ -22,7 +22,6 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Dependency
-
 def get_db():
     """input: None
     output: Yields a database session for use in requests.
